@@ -13,10 +13,6 @@ jobs:
       - run:
           name: Start restoring ccache
           command: date +%d-%m-%Y > /tmp/date
-      - restore_cache:
-          keys:
-            - ccache-{{ checksum "/tmp/date" }}
-            - ccache-
       - run:
           name: CMake Configure
           command: mkdir build && cd build && cmake ..
