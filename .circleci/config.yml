@@ -3,7 +3,7 @@ version: 2.0
 jobs:
   cogutil:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           CCACHE_DIR: /ws/ccache
@@ -41,14 +41,14 @@ jobs:
 
   atomspace:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           PGHOST: opencog-postgres
           PGUSER: opencog_test
           PGPASSWORD: cheese
           CCACHE_DIR: /ws/ccache
-      - image: opencog/postgres
+      - image: singularitynet/postgres
         name: opencog-postgres
     working_directory: /ws/atomspace
     steps:
@@ -105,7 +105,7 @@ jobs:
 
   ure:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           CCACHE_DIR: /ws/ccache
@@ -157,7 +157,7 @@ jobs:
 
   miner:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           CCACHE_DIR: /ws/ccache
@@ -212,7 +212,7 @@ jobs:
 
   moses:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           CCACHE_DIR: /ws/ccache
@@ -245,7 +245,7 @@ jobs:
 
   asmoses:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           CCACHE_DIR: /ws/ccache
@@ -281,7 +281,7 @@ jobs:
 
   opencog:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
         environment:
           CCACHE_DIR: /ws/ccache
@@ -336,7 +336,7 @@ jobs:
 
   package:
     docker:
-      - image: opencog/opencog-deps
+      - image: singularitynet/opencog-deps
         user: root
     working_directory: /ws/cogutil
     steps:
