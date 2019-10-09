@@ -150,7 +150,6 @@ Logger::~Logger()
 std::map<std::string, Logger::LogWriter*> Logger::_loggers;
 
 Logger::LogWriter::LogWriter(void)
-	: printToStdout(false)
 {
     writingLoopActive = false;
 #ifdef HAVE_VALGRIND
@@ -259,16 +258,6 @@ void Logger::LogWriter::write_msg(const std::string &msg)
     // Flush, because log messages are important, especially if we
     // are about to crash. So we don't want to have these buffered up.
     fflush(logfile);
-
-    // Stdout writing must be unlocked.
-    lock.unlock();
-
-    // Write to stdout.
-    if (printToStdout)
-    {
-        std::cout << msg;
-        std::cout.flush();
-    }
 }
 
 Logger::Logger(const std::string &fname, Logger::Level level, bool tsEnabled)
@@ -282,6 +271,7 @@ Logger::Logger(const std::string &fname, Logger::Level level, bool tsEnabled)
     this->timestampEnabled = tsEnabled;
     this->threadIdEnabled = false;
     this->printLevel = true;
+    this->printToStdout = false;
     this->syncEnabled = false;
 
     this->logEnabled = true;
@@ -306,6 +296,7 @@ void Logger::set(const Logger& log)
 {
     this->component.assign(log.component);
     this->currentLevel = log.currentLevel;
+    this->printToStdout = log.printToStdout;
     this->printLevel = log.printLevel;
     this->backTraceLevel = log.backTraceLevel;
     this->timestampEnabled = log.timestampEnabled;
@@ -395,12 +386,12 @@ void Logger::set_thread_id_flag(bool flag)
 
 void Logger::set_print_to_stdout_flag(bool flag)
 {
-    if (_log_writer) _log_writer->printToStdout = flag;
+    printToStdout = flag;
 }
 
 bool Logger::get_print_to_stdout_flag() const
 {
-    return _log_writer and _log_writer->printToStdout;
+    return printToStdout;
 }
 
 void Logger::set_print_level_flag(bool flag)
@@ -475,17 +466,24 @@ void Logger::log(Logger::Level level, const std::string &txt)
 
     _log_writer->qmsg(oss.str());
 
-    // If the queue gets too full, block until it's flushed to file or
-    // stdout. This can sometimes happen, if some component is spewing
+    // If the queue gets too full, block until it's flushed to
+    // file. This can sometimes happen, if some component is spewing
     // lots of debugging messages in a tight loop.
     if (_log_writer->size() > max_queue_size_allowed) flush();
 
-    // Errors are associated with immenent crashes. Make sure that the
+    // Errors are associated with imminent crashes. Make sure that the
     // stack trace is written to disk *before* the crash happens! Yes,
     // this introduces latency and lag. Tough. Don't generate errors.
     if (level <= backTraceLevel) flush();
 
     if (syncEnabled) flush();
+
+    // Write to stdout.
+    if (printToStdout)
+    {
+        std::cout << oss.str();
+        std::cout.flush();
+    }
 }
 
 void Logger::backtrace()
