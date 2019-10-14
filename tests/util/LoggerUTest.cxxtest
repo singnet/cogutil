@@ -27,6 +27,7 @@
 #include <unistd.h>
 
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -72,11 +73,18 @@ public:
 
     void testLog()
     {
+        char const * tmpdir;
         char baselineFile[256];
         char logFile[256];
 
-        strcpy(baselineFile, "/tmp/testLogBaseline.txt");
-        strcpy(logFile, "/tmp/testLog.txt");
+	tmpdir = getenv("TMPDIR");
+	if (tmpdir == nullptr) tmpdir = "/tmp";
+
+	strcpy(baselineFile, tmpdir);
+	strcpy(logFile, tmpdir);
+
+        strcat(baselineFile, "/testLogBaseline.txt");
+        strcat(logFile, "/testLog.txt");
 
         Logger baseline(baselineFile, Logger::FINE, false);
         Logger _logger(logFile, Logger::DEBUG, false);
@@ -100,7 +108,7 @@ public:
         TS_ASSERT(f1 != NULL);
         TS_ASSERT(f2 != NULL);
 
-        char c1 = fgetc(f1);
+        int c1 = fgetc(f1);
         while (c1 != EOF)
         {
             char c2 = fgetc(f2);
@@ -243,7 +251,8 @@ public:
     // Define a second logger, write some massive message on the first
     // one, a small message on the second, and see if the message of
     // the second scrumbles the first message or appears after it.
-    void testLoggerInteraction() {
+    void testLoggerInteraction()
+    {
         logger().set_level(Logger::DEBUG);
         logger().set_timestamp_flag(false);
         Logger my_logger;
@@ -269,6 +278,23 @@ public:
         std::cout << "resline = " << resline << std::endl;
 
         TS_ASSERT(resline == prefix + message);
+    }
+
+    // Define a second logger, enable stdout in one logger, and check
+    // whether the stdout in the other logger is left unchanged.
+    //
+    // TODO: re-enabled once fixed
+    void xtestLoggerStdoutFlagInteraction()
+    {
+        Logger my_logger;
+
+        // Set different stdout flags for my_logger and the default logger
+        logger().set_print_to_stdout_flag(false);
+        my_logger.set_print_to_stdout_flag(true);
+
+        // Make sure their flags differ
+        TS_ASSERT_DIFFERS(logger().get_print_to_stdout_flag(),
+                          my_logger.get_print_to_stdout_flag());
     }
 
 }; // class
